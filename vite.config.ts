@@ -16,8 +16,8 @@ export default defineConfig({
       },
     },
   ],
-  // Use relative paths for GitHub Pages
-  base: './',
+  // Base path for GitHub Pages - must match repository name
+  base: '/MoodBoard/',
   build: {
     outDir: 'dist',
     // Prevent test files from being included in the build
@@ -43,8 +43,5 @@ export default defineConfig({
       '@testing-library/jest-dom': path.resolve(__dirname, 'src/utils/empty-module.js')
     }
   },
-  // Handle SPA fallback for GitHub Pages
-  server: {
-    historyApiFallback: true,
-  },
+  // Vite handles SPA fallback automatically with the base config
 });
