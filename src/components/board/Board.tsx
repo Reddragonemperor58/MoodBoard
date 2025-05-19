@@ -66,7 +66,7 @@ const Board: React.FC = () => {
       </div>
       
       <div className="flex flex-col gap-4">
-        {state.segmentOrder.map(segmentId => {
+        {state.segmentOrder.map((segmentId: string) => {
           const segment = state.segments[segmentId];
           return (
             <TimeSegment

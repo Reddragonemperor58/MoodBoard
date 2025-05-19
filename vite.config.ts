@@ -5,6 +5,8 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Base path for GitHub Pages - must match repository name
+  base: process.env.NODE_ENV === 'production' ? '/MoodBoard/' : '/',
   plugins: [
     react(),
     {
@@ -16,12 +18,12 @@ export default defineConfig({
       },
     },
   ],
-  // Base path for GitHub Pages - must match repository name
-  base: '/MoodBoard/',
   build: {
     outDir: 'dist',
     // Generate manifest.json for better caching
     manifest: true,
+    // Ensure proper handling of asset paths
+    assetsDir: '.',
     // Enable source maps for better debugging
     sourcemap: true,
     // Ensure proper module type for ESM

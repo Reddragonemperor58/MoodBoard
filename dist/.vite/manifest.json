@@ -1,0 +1,34 @@
+{
+  "_dnd-CyFmz64M.js": {
+    "file": "assets/dnd-CyFmz64M.js",
+    "name": "dnd",
+    "imports": [
+      "_react-CSMeLsXS.js"
+    ]
+  },
+  "_framer-C6x-tpub.js": {
+    "file": "assets/framer-C6x-tpub.js",
+    "name": "framer",
+    "imports": [
+      "_react-CSMeLsXS.js"
+    ]
+  },
+  "_react-CSMeLsXS.js": {
+    "file": "assets/react-CSMeLsXS.js",
+    "name": "react"
+  },
+  "index.html": {
+    "file": "assets/index-CWWvTbKF.js",
+    "name": "index",
+    "src": "index.html",
+    "isEntry": true,
+    "imports": [
+      "_react-CSMeLsXS.js",
+      "_framer-C6x-tpub.js",
+      "_dnd-CyFmz64M.js"
+    ],
+    "css": [
+      "assets/index-DpocBbhy.css"
+    ]
+  }
+}
