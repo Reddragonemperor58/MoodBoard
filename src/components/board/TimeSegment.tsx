@@ -1,7 +1,9 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Resizable } from 're-resizable';
+import { Resizable as ReactResizable } from 'react-resizable';
+import type { ResizeHandle, ResizeCallbackData, ResizableProps } from 'react-resizable';
+import { RefObject, CSSProperties } from 'react';
 import { Z_INDEX } from '../../utils/z-index';
 import { v4 as uuidv4 } from 'uuid';
 import { TimeSegment as TimeSegmentType, Sticker as StickerType } from '../../types/moodboard';
@@ -9,12 +11,17 @@ import { useMoodboard } from '../../context/MoodboardContext';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import SimpleEditableText from '../SimpleEditableText';
 import Sticker from '../Sticker/StickerNew';
+// import { useDrop } from 'react-dnd'; // Removed unused import
+import 'react-resizable/css/styles.css';
 
 interface TimeSegmentProps {
   segment: TimeSegmentType;
-  onUpdate: (segmentId: string, updates: Partial<TimeSegmentType>) => void;
-  onDelete: (segmentId: string) => void;
+  onUpdate: (id: string, updates: Partial<TimeSegmentType>) => void;
+  onDelete: (id: string) => void;
 }
+
+// Create a custom Resizable component that extends the base Resizable with proper typing
+const Resizable = ReactResizable as unknown as React.ComponentClass<ResizableProps>;
 
 export const TimeSegment: React.FC<TimeSegmentProps> = ({ segment, onUpdate, onDelete }) => {
   const { state, dispatch } = useMoodboard();
@@ -52,11 +59,10 @@ export const TimeSegment: React.FC<TimeSegmentProps> = ({ segment, onUpdate, onD
     }
   }, [segment.width, segment.height, isResizing]);
 
-  const { setNodeRef, isOver } = useDroppable({
-    id: segment.id,
+  const { isOver } = useDroppable({
+    id: `time-segment-${segment.id}`,
     data: {
-      accepts: ['STICKER'],
-      type: 'SEGMENT',
+      type: 'time-segment',
       segmentId: segment.id,
     },
   });
@@ -172,65 +178,15 @@ export const TimeSegment: React.FC<TimeSegmentProps> = ({ segment, onUpdate, onD
   }, []);
   
   // Handle resize
-  const handleResize = useCallback((_: any, __: any, ref: HTMLElement) => {
-    // Update current dimensions during resize
-    const width = ref.offsetWidth;
-    const height = ref.offsetHeight;
-    
-    setCurrentDimensions({
-      width,
-      height
-    });
-    
-    // Update segment in real-time for smoother resizing
-    dispatch({
-      type: 'UPDATE_SEGMENT',
-      payload: {
-        id: segment.id,
-        width,
-        height
-      }
-    });
-  }, [dispatch, segment.id]);
-  
-  // Handle resize stop
-  const handleResizeStop = useCallback((_: any, __: any, ref: HTMLElement, delta: { width: number; height: number }) => {
-    // Get the actual dimensions directly from the DOM to ensure accuracy
-    const newWidth = ref.offsetWidth;
-    const newHeight = ref.offsetHeight;
-    
-    console.log(`Resize stopped: new dimensions ${newWidth}x${newHeight}, delta: ${JSON.stringify(delta)}`);
-    
-    // Only update if dimensions actually changed
-    if (newWidth !== segment.width || newHeight !== segment.height) {
-      // Update current dimensions first to prevent flickering
-      setCurrentDimensions({
-        width: newWidth,
-        height: newHeight
-      });
-      
-      // Dispatch the UPDATE_SEGMENT action directly to ensure dimensions are saved
-      dispatch({
-        type: 'UPDATE_SEGMENT',
-        payload: {
-          id: segment.id,
-          width: newWidth,
-          height: newHeight
-        }
-      });
-      
-      // Also call the onUpdate prop to maintain compatibility
-      onUpdate(segment.id, {
-        width: newWidth,
-        height: newHeight,
-      });
-      
-      console.log(`Updated segment ${segment.id}: new dimensions ${newWidth}x${newHeight}`);
-    }
-    
-    // Reset resize state
+  const handleResize = useCallback((_: React.SyntheticEvent, { size }: ResizeCallbackData) => {
+    setCurrentDimensions({ width: size.width, height: size.height });
+  }, []);
+
+  const handleResizeStop = useCallback((_: React.SyntheticEvent, { size }: ResizeCallbackData) => {
+    setCurrentDimensions({ width: size.width, height: size.height });
+    onUpdate(segment.id, { width: size.width, height: size.height });
     setIsResizing(false);
-  }, [segment, onUpdate, dispatch]);
+  }, [onUpdate, segment.id]);
 
   return (
     <motion.div
@@ -245,39 +201,7 @@ export const TimeSegment: React.FC<TimeSegmentProps> = ({ segment, onUpdate, onD
       className="relative time-segment" // Added time-segment class
       data-segment-id={segment.id}
     >
-      <Resizable
-        size={{ 
-          width: currentDimensions.width || segment.width, 
-          height: currentDimensions.height || segment.height 
-        }}
-        defaultSize={{ 
-          width: segment.width, 
-          height: segment.height 
-        }}
-        minWidth={200}
-        minHeight={150}
-        handleClasses={{
-          right: 'border-r-4 border-blue-500 hover:border-blue-600',
-          bottom: 'border-b-4 border-blue-500 hover:border-blue-600',
-          bottomRight: 'border-r-4 border-b-4 border-blue-500 hover:border-blue-600'
-        }}
-        onResizeStart={(e) => {
-          // Prevent the click from propagating to parent elements
-          e.stopPropagation();
-          handleResizeStart();
-        }}
-        onResize={handleResize}
-        onResizeStop={handleResizeStop}
-        enable={{
-          top: false,
-          right: true,
-          bottom: true,
-          left: false,
-          topRight: false,
-          bottomRight: true,
-          bottomLeft: false,
-          topLeft: false,
-        }}
+      <div
         className={`
           flex flex-col h-full 
           bg-white dark:bg-gray-800
@@ -286,119 +210,146 @@ export const TimeSegment: React.FC<TimeSegmentProps> = ({ segment, onUpdate, onD
           ${isOver ? 'border-blue-500 ring-4 ring-blue-300 ring-opacity-50' : 'border-gray-200 dark:border-gray-700'}
           ${isOver ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
         `}
+        style={{
+          position: 'relative',
+          overflow: 'hidden',
+          width: currentDimensions.width || segment.width,
+          height: currentDimensions.height || segment.height,
+        } as CSSProperties}
       >
-        {/* Header */}
-        <div 
-          ref={setNodeRef}
-          className="flex items-center justify-between p-4"
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-        >
-          {/* Title with SimpleEditableText component */}
-          <div 
-            className="flex-grow cursor-text"
-            onClick={(e) => {
-              if (!isEditing) {
-                e.stopPropagation();
-                setIsEditing(true);
-              }
-            }}
-          > 
-            <SimpleEditableText
-              text={title}
-              isEditing={isEditing}
-              onTextChange={(newText: string) => {
-                console.log(`Title changed to: ${newText}`);
-                // Update both state and ref
-                setTitle(newText);
-                titleRef.current = newText;
-              }}
-              onEditComplete={() => {
-                // Use the ref for the most recent value
-                const currentTitle = titleRef.current;
-                console.log(`Completing edit with title: ${currentTitle}`);
-                
-                // Save changes to context
-                dispatch({
-                  type: 'UPDATE_SEGMENT',
-                  payload: { id: segment.id, title: currentTitle }
-                });
-                
-                // Call the update prop
-                onUpdate(segment.id, { title: currentTitle });
-                
-                // Close the edit mode
-                setIsEditing(false);
-              }}
-              onEditCancel={() => {
-                setIsEditing(false);
-                // Reset to segment's original title
-                setTitle(segment.title);
-                titleRef.current = segment.title;
-              }}
-              textClassName="font-medium text-gray-800 dark:text-gray-100 cursor-text hover:text-blue-600 dark:hover:text-blue-400"
+        <div className="resizable-container">
+        <Resizable
+          width={currentDimensions.width || segment.width}
+          height={currentDimensions.height || segment.height}
+          minConstraints={[200, 150]}
+          maxConstraints={[800, 600]}
+          resizeHandles={['e', 's', 'se'] as ResizeHandle[]}
+          onResize={handleResize as any}
+          onResizeStop={handleResizeStop as any}
+          onResizeStart={handleResizeStart as any}
+          handle={(handleAxis: ResizeHandle, ref: RefObject<HTMLDivElement>) => (
+            <div
+              ref={ref}
+              className={`resize-handle resize-handle-${handleAxis}`}
+              onClick={(e) => e.stopPropagation()}
             />
+          )}
+        >
+          <div style={{ width: '100%', height: '100%' }}>
+          {/* Header */}
+          <div 
+            className="flex items-center justify-between p-4"
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+          >
+            {/* Title with SimpleEditableText component */}
+            <div 
+              className="flex-grow cursor-text"
+              onClick={(e) => {
+                if (!isEditing) {
+                  e.stopPropagation();
+                  setIsEditing(true);
+                }
+              }}
+            > 
+              <SimpleEditableText
+                text={title}
+                isEditing={isEditing}
+                onTextChange={(newText: string) => {
+                  console.log(`Title changed to: ${newText}`);
+                  // Update both state and ref
+                  setTitle(newText);
+                  titleRef.current = newText;
+                }}
+                onEditComplete={() => {
+                  // Use the ref for the most recent value
+                  const currentTitle = titleRef.current;
+                  console.log(`Completing edit with title: ${currentTitle}`);
+                  
+                  // Save changes to context
+                  dispatch({
+                    type: 'UPDATE_SEGMENT',
+                    payload: { id: segment.id, title: currentTitle }
+                  });
+                  
+                  // Call the update prop
+                  onUpdate(segment.id, { title: currentTitle });
+                  
+                  // Close the edit mode
+                  setIsEditing(false);
+                }}
+                onEditCancel={() => {
+                  setIsEditing(false);
+                  // Reset to segment's original title
+                  setTitle(segment.title);
+                  titleRef.current = segment.title;
+                }}
+                textClassName="font-medium text-gray-800 dark:text-gray-100 cursor-text hover:text-blue-600 dark:hover:text-blue-400"
+              />
+            </div>
+
+            {/* Controls */}
+            <AnimatePresence>
+              {(isHovered || isEditing) && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center space-x-2 z-50"
+                >
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      onDelete(segment.id);
+                    }}
+                    className="p-2 bg-red-100 dark:bg-red-900/20 rounded text-red-500 hover:bg-red-200 dark:hover:bg-red-800/50 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                    title="Delete segment"
+                  >
+                    <TrashIcon className="w-4 h-4" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* Controls */}
-          <AnimatePresence>
-            {(isHovered || isEditing) && (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center space-x-2 z-50"
-              >
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    onDelete(segment.id);
-                  }}
-                  className="p-2 bg-red-100 dark:bg-red-900/20 rounded text-red-500 hover:bg-red-200 dark:hover:bg-red-800/50 dark:text-red-400 dark:hover:text-red-300 transition-colors"
-                  title="Delete segment"
-                >
-                  <TrashIcon className="w-4 h-4" />
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Content Area */}
-        <div 
-          ref={contentRef}
-          className="flex-1 p-4 relative time-segment-content"
-          data-segment-id={segment.id}
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-        >
-          {/* Empty State */}
-          {stickers.length === 0 && (
-            <div className="flex items-center justify-center h-full text-gray-400">
-              <p className="text-center">Drop stickers here</p>
-            </div>
-          )}
-
-          {/* Drop Zone Indicator */}
-          {isOver && (
-            <div className="absolute inset-0 border-2 border-blue-500 border-dashed rounded-lg bg-blue-50 bg-opacity-50 pointer-events-none">
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <svg className="w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
+          {/* Content Area */}
+          <div 
+            ref={contentRef}
+            className="flex-1 p-4 relative time-segment-content"
+            data-segment-id={segment.id}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+          >
+            {/* Empty State */}
+            {stickers.length === 0 && (
+              <div className="flex items-center justify-center h-full text-gray-400">
+                <p className="text-center">Drop stickers here</p>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Stickers */}
-          {stickers.map((sticker: StickerType) => (
-            <Sticker key={sticker.id} sticker={sticker} />
-          ))}
-        </div>
-      </Resizable>
+            {/* Drop Zone Indicator */}
+            {isOver && (
+              <div className="absolute inset-0 border-2 border-blue-500 border-dashed rounded-lg bg-blue-50 bg-opacity-50 pointer-events-none">
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                  <svg className="w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+              </div>
+            )}
+
+            {/* Stickers */}
+            {stickers.map((sticker: StickerType) => (
+              <Sticker key={sticker.id} sticker={sticker} />
+            ))}
+          </div>
+          </div>
+        </Resizable>
+      </div>
+      </div>
     </motion.div>
   );
 };
