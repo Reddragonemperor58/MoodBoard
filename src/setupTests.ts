@@ -1,8 +1,19 @@
-import { expect, afterEach, vi } from 'vitest';
-import { cleanup } from '@testing-library/react';
+// Check if we should skip test imports
+const skipTests = import.meta.env.VITE_SKIP_TESTS === 'true';
+
+// Only import test libraries if we're not skipping tests
 import React from 'react';
-import * as matchers from '@testing-library/jest-dom/matchers';
-import { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers';
+
+// Conditionally import test dependencies
+let vitest = {};
+let testingLibrary = {};
+let jestDomMatchers = {};
+
+if (!skipTests) {
+  vitest = await import('vitest');
+  testingLibrary = await import('@testing-library/react');
+  jestDomMatchers = await import('@testing-library/jest-dom/matchers');
+}
 
 declare module 'vitest' {
   interface Assertion<T = any> extends TestingLibraryMatchers<T, void> {}

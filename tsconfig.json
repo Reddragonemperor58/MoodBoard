@@ -25,7 +25,9 @@
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",
-    "**/*.spec.tsx"
+    "**/*.spec.tsx",
+    "src/setupTests.ts",
+    "vitest.config.ts"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

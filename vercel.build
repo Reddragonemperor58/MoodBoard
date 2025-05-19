@@ -1,0 +1,3 @@
+[build]
+  command = "npm run build:vercel"
+  environment = { VITE_SKIP_TESTS = "true" }

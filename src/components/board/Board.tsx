@@ -4,11 +4,15 @@ import { useMoodboard } from '../../context/MoodboardContext';
 import TimeSegment from './TimeSegment';
 import { v4 as uuidv4 } from 'uuid';
 import { TimeSegment as TimeSegmentType } from '../../types/moodboard';
-import type { Sticker as StickerType } from '../../types/moodboard';
+import type { Sticker as StickerType, TextSticker, ImageSticker, IconSticker } from '../../types/moodboard';
 
-type StickerPayload = Omit<StickerType, 'id' | 'timeSegmentId'> & {
+type StickerPayload = {
+  type: 'text' | 'image' | 'icon';
+  content?: string;
   timeSegmentId: string;
   id?: string;
+  width?: number;
+  height?: number;
 };
 
 const Board: React.FC = () => {
@@ -46,6 +50,7 @@ const Board: React.FC = () => {
       order: state.segmentOrder.length,
       width: 300,
       height: 300,
+      childrenIds: [], // Add missing childrenIds property
     };
     
     dispatch({
@@ -82,20 +87,42 @@ const Board: React.FC = () => {
   
   // Handle adding a sticker to a time segment
   const handleAddSticker = useCallback((stickerData: StickerPayload) => {
-    const sticker: StickerType = {
+    let sticker: StickerType;
+    
+    const baseSticker = {
       id: stickerData.id || uuidv4(),
       timeSegmentId: stickerData.timeSegmentId,
-      type: stickerData.type,
-      content: stickerData.content,
-      imageUrl: stickerData.imageUrl,
-      icon: stickerData.icon,
-      x: stickerData.x,
-      y: stickerData.y,
+      x: 0,
+      y: 0,
       width: stickerData.width || 150,
       height: stickerData.height || 100,
       rotation: 0,
       zIndex: 1,
     };
+    
+    // Create the appropriate sticker type based on the incoming data
+    if (stickerData.type === 'icon') {
+      sticker = {
+        ...baseSticker,
+        type: 'icon',
+        content: stickerData.content || '',
+        icon: stickerData.content || '',
+      } as IconSticker;
+    } else if (stickerData.type === 'image') {
+      sticker = {
+        ...baseSticker,
+        type: 'image',
+        content: stickerData.content || '',
+        originalSize: { width: baseSticker.width, height: baseSticker.height }
+      } as ImageSticker;
+    } else {
+      // Default to text sticker for any other type
+      sticker = {
+        ...baseSticker,
+        type: 'text',
+        content: stickerData.content || '',
+      } as TextSticker;
+    }
     
     dispatch({
       type: 'ADD_STICKER',

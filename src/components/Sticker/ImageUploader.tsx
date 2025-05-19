@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { ImageSticker } from '../../types/moodboard';
 import { v4 as uuidv4 } from 'uuid';
 import { PhotoIcon } from '@heroicons/react/24/outline';

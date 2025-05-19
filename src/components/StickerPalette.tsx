@@ -1,14 +1,13 @@
 import React from 'react';
-import { useDraggable } from '@dnd-kit/core';
 
-const STICKER_TYPES = [
+const STICKER_TYPES: Array<{type: 'text' | 'image' | 'icon', content?: string, icon?: string}> = [
   { type: 'text', content: 'Text Note', icon: '📝' },
-  { type: 'icon', icon: '❤️' },
-  { type: 'icon', icon: '⭐' },
-  { type: 'icon', icon: '🔥' },
-  { type: 'icon', icon: '🎯' },
-  { type: 'icon', icon: '💡' },
-  { type: 'icon', icon: '👍' },
+  { type: 'icon', content: '❤️', icon: '❤️' },
+  { type: 'icon', content: '⭐', icon: '⭐' },
+  { type: 'icon', content: '🔥', icon: '🔥' },
+  { type: 'icon', content: '🎯', icon: '🎯' },
+  { type: 'icon', content: '💡', icon: '💡' },
+  { type: 'icon', content: '👍', icon: '👍' },
 ];
 
 interface DraggableStickerProps {
