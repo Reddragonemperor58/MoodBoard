@@ -6,7 +6,7 @@ import { resolve } from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/MoonBoard/', // Base path for GitHub Pages
+  base: '/MoodBoard/', // Base path for GitHub Pages - IMPORTANT: Matches the correct repo name
   build: {
     // Prevent test files from being included in the build
     rollupOptions: {
