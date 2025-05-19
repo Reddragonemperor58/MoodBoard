@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import './styles.css';
 import MoodboardCanvas from './components/board/MoodboardCanvas';
 import StickerPalette from './components/StickerPalette';
@@ -239,6 +240,7 @@ const MoodboardControls = ({ darkMode, isMobile }: { darkMode: boolean; isMobile
 function App() {
   const [darkMode] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const location = useLocation();
   
   useEffect(() => {
     localStorage.setItem('moodboard-dark-mode', 'true');
@@ -257,59 +259,74 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+
+  const MainContent: React.FC = () => (
+    <>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Your Trip Moodboard</h1>
+        <p className="text-gray-600 dark:text-gray-300 mt-1 transition-colors duration-200">
+          Create a visual plan for your next adventure. Drag stickers onto the canvas and organize them by day.
+        </p>
+        
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          <ViewModeToggle />
+          <MoodboardControls darkMode={darkMode} isMobile={isMobile} />
+        </div>
+      </div>
+      
+      <div className={`flex ${isMobile ? 'flex-col' : 'flex-col lg:flex-row'} gap-6`}>
+        <aside className={`${isMobile ? 'w-full' : 'w-full lg:w-72'} shrink-0 ${isMobile ? 'order-2' : ''}`}>
+          <StickerPalette />
+        </aside>
+        
+        <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <MoodboardCanvas />
+        </div>
+      </div>
+    </>
+  );
+
+  // Wrap the entire app with ViewModeProvider
+  const AppContent = () => (
+    <div className={`min-h-screen transition-colors duration-200 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+      <header className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <span className="text-blue-600 dark:text-blue-400 text-2xl font-bold">✈️ MoodBoard</span>
+              </div>
+              {!isMobile && (
+                <div className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                  Plan your dream trip, visually
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <MainContent />
+      </main>
+      
+      <footer className="mt-12 py-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+            Moodboard • {new Date().getFullYear()} • Made with ❤️
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+
   return (
     <ViewModeProvider>
-      <div className={`min-h-screen transition-colors duration-200 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
-        <header className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <span className="text-blue-600 dark:text-blue-400 text-2xl font-bold">✈️ MoodBoard</span>
-                </div>
-                {!isMobile && (
-                  <div className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                    Plan your dream trip, visually
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
-        
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Your Trip Moodboard</h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-1 transition-colors duration-200">
-              Create a visual plan for your next adventure. Drag stickers onto the canvas and organize them by day.
-            </p>
-            
-            <div className="mt-3 flex flex-wrap items-center gap-4">
-              <ViewModeToggle />
-              {/* Show MoodboardControls for all devices, but with different styling based on mobile */}
-              <MoodboardControls darkMode={darkMode} isMobile={isMobile} />
-            </div>
-          </div>
-          
-          <div className={`flex ${isMobile ? 'flex-col' : 'flex-col lg:flex-row'} gap-6`}>
-            <aside className={`${isMobile ? 'w-full' : 'w-full lg:w-72'} shrink-0 ${isMobile ? 'order-2' : ''}`}>
-              <StickerPalette />
-            </aside>
-            
-            <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-              <MoodboardCanvas />
-            </div>
-          </div>
-        </main>
-        
-        <footer className="mt-12 py-6 border-t border-gray-200 dark:border-gray-700">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-              Moodboard • {new Date().getFullYear()} • Made with ❤️
-            </p>
-          </div>
-        </footer>
-      </div>
+      <AppContent />
     </ViewModeProvider>
   );
 }

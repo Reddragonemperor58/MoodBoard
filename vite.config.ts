@@ -1,7 +1,7 @@
 // vite.config.ts
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -16,7 +16,8 @@ export default defineConfig({
       },
     },
   ],
-  base: '/MoodBoard/', // Base path for GitHub Pages - IMPORTANT: Matches the correct repo name
+  // Use relative paths for GitHub Pages
+  base: './',
   build: {
     outDir: 'dist',
     // Prevent test files from being included in the build
@@ -24,7 +25,14 @@ export default defineConfig({
       external: [
         /vitest/,
         /@testing-library/,
-      ]
+      ],
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          framer: ['framer-motion'],
+          dnd: ['@dnd-kit/core', '@dnd-kit/sortable'],
+        },
+      },
     }
   },
   resolve: {
@@ -34,5 +42,9 @@ export default defineConfig({
       '@testing-library/react': path.resolve(__dirname, 'src/utils/empty-module.js'),
       '@testing-library/jest-dom': path.resolve(__dirname, 'src/utils/empty-module.js')
     }
-  }
-})
+  },
+  // Handle SPA fallback for GitHub Pages
+  server: {
+    historyApiFallback: true,
+  },
+});
