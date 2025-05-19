@@ -35,4 +35,171 @@
   .animate-fade-in {
     animation: fade-in 0.3s ease;
   }
+  
+  /* Sticker resize handle styles */
+  .resize-handle-right {
+    position: absolute !important;
+    right: -4px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 8px !important;
+    height: 20px !important; 
+    background-color: #3b82f6 !important;
+    border-radius: 4px !important;
+    opacity: 0 !important;
+    transition: opacity 0.2s !important;
+    cursor: ew-resize !important;
+  }
+  
+  .resize-handle-bottom {
+    position: absolute !important;
+    bottom: -4px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    height: 8px !important;
+    width: 20px !important;
+    background-color: #3b82f6 !important;
+    border-radius: 4px !important;
+    opacity: 0 !important;
+    transition: opacity 0.2s !important;
+    cursor: ns-resize !important;
+  }
+  
+  .resize-handle-corner {
+    position: absolute !important;
+    right: -4px !important;
+    bottom: -4px !important;
+    width: 12px !important;
+    height: 12px !important;
+    background-color: #3b82f6 !important;
+    border-radius: 4px !important;
+    opacity: 0 !important;
+    transition: opacity 0.2s !important;
+    cursor: nwse-resize !important;
+  }
+  
+  /* Show handles on hover */
+  .sticker-element:hover .resize-handle-right,
+  .sticker-element:hover .resize-handle-bottom,
+  .sticker-element:hover .resize-handle-corner {
+    opacity: 1 !important;
+  }
+  
+  /* Feedback for dropping */
+  .drop-success {
+    animation: drop-pulse 0.3s ease;
+  }
+  
+  @keyframes drop-pulse {
+    0% { background-color: rgba(59, 130, 246, 0); }
+    50% { background-color: rgba(59, 130, 246, 0.2); }
+    100% { background-color: rgba(59, 130, 246, 0); }
+  }
+  
+  .drag-over {
+    border: 2px dashed #3b82f6 !important;
+    background-color: rgba(59, 130, 246, 0.05) !important;
+  }
+  
+  /* Sticker dragging styles to prevent TimeSegment from being affected */
+  body.sticker-dragging .sticker-element {
+    pointer-events: all !important;
+    z-index: 9999 !important;
+  }
+  
+  body.sticker-dragging .time-segment {
+    pointer-events: none !important;
+  }
+  
+  body.sticker-dragging .time-segment-content {
+    pointer-events: none !important;
+  }
+  
+  /* Canvas constraint styles */
+  .moodboard-canvas {
+    position: relative;
+    overflow: hidden;
+    contain: layout paint;
+    resize: both;
+    box-sizing: border-box;
+  }
+  
+  /* Transform wrapper constraint styles */
+  .react-transform-component {
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    resize: both !important;
+    min-width: 300px !important;
+    min-height: 300px !important;
+    box-sizing: border-box !important;
+  }
+  
+  .react-transform-element {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+  }
+  
+  /* Canvas container styles for resizing */
+  .canvas-container {
+    position: relative !important;
+    box-sizing: border-box !important;
+    resize: both !important;
+    overflow: auto !important;
+    min-width: 300px !important;
+    min-height: 300px !important;
+  }
+  
+  /* TimeSegment constraint styles */
+  .time-segment {
+    max-width: 100%;
+    max-height: 100%;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    resize: both;
+  }
+  
+  /* TimeSegment resizable element styles */
+  .time-segment .react-resizable {
+    position: relative;
+    box-sizing: border-box;
+  }
+  
+  /* Sticker constraint styles */
+  .time-segment-content {
+    position: relative;
+    overflow: auto;
+    box-sizing: border-box;
+    min-height: 100px;
+    resize: both;
+  }
+  
+  .sticker-element {
+    box-sizing: border-box;
+    position: absolute;
+    resize: both;
+    overflow: visible;
+    min-width: 50px;
+    min-height: 50px;
+  }
+  
+  /* Additional resizing handles */
+  .resize-handle {
+    position: absolute;
+    background-color: #3b82f6;
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  
+  .sticker-element:hover .resize-handle,
+  .time-segment:hover .resize-handle {
+    opacity: 1;
+  }
 }
