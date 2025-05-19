@@ -20,20 +20,32 @@ export default defineConfig({
   base: '/MoodBoard/',
   build: {
     outDir: 'dist',
-    // Prevent test files from being included in the build
+    // Generate manifest.json for better caching
+    manifest: true,
+    // Enable source maps for better debugging
+    sourcemap: true,
+    // Ensure proper module type for ESM
     rollupOptions: {
       external: [
         /vitest/,
         /@testing-library/,
       ],
       output: {
+        // Ensure proper module type
+        format: 'es',
+        // Ensure proper file extensions
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]',
         manualChunks: {
           react: ['react', 'react-dom', 'react-router-dom'],
           framer: ['framer-motion'],
           dnd: ['@dnd-kit/core', '@dnd-kit/sortable'],
         },
       },
-    }
+    },
+    // Ensure proper MIME types
+    assetsInlineLimit: 0,
   },
   resolve: {
     alias: {
