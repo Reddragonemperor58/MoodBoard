@@ -36,7 +36,7 @@ npm run dev
 yarn dev
 ```
 
-The application will be available at [http://localhost:5173](https://reddragonemperor58.github.io/MoodBoard/#/)
+The application will be available at [MoodBoard.com](https://reddragonemperor58.github.io/MoodBoard/#/)
 
 ## Project Structure
 
